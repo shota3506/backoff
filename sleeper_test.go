@@ -45,7 +45,7 @@ func TestSleeper_Iter(t *testing.T) {
 		"yield 4",
 	}
 	if !slices.Equal(callStack, expected) {
-		t.Errorf("got %v, expected %v", callStack, expected)
+		t.Errorf("got: %v, expected: %v", callStack, expected)
 	}
 }
 
@@ -86,6 +86,6 @@ func TestSleeper_IterContext(t *testing.T) {
 		"yield 2",
 	}
 	if !slices.Equal(callStack, expected) {
-		t.Errorf("got %v, expected %v", callStack, expected)
+		t.Errorf("got: %v, expected: %v", callStack, expected)
 	}
 }

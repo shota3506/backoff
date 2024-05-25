@@ -7,32 +7,50 @@ import (
 )
 
 func TestConstantBackoff(t *testing.T) {
-	duration := time.Second
-	b := NewConstantBackoff(duration)
-
-	var got []struct {
+	type result struct {
 		i int
 		d time.Duration
 	}
 
-	for i, duration := range b.Iter(5) {
-		got = append(got, struct {
-			i int
-			d time.Duration
-		}{i: i, d: duration})
-	}
-
-	expected := []struct {
-		i int
-		d time.Duration
+	for _, tt := range []struct {
+		name     string
+		interval time.Duration
+		expected []result
 	}{
-		{i: 0, d: time.Second},
-		{i: 1, d: time.Second},
-		{i: 2, d: time.Second},
-		{i: 3, d: time.Second},
-		{i: 4, d: time.Second},
-	}
-	if !slices.Equal(got, expected) {
-		t.Errorf("got %v, expected %v", got, expected)
+		{
+			name:     "1 second",
+			interval: time.Second,
+			expected: []result{
+				{i: 0, d: time.Second},
+				{i: 1, d: time.Second},
+				{i: 2, d: time.Second},
+				{i: 3, d: time.Second},
+				{i: 4, d: time.Second},
+			},
+		},
+		{
+			name:     "10 second",
+			interval: 10 * time.Second,
+			expected: []result{
+				{i: 0, d: 10 * time.Second},
+				{i: 1, d: 10 * time.Second},
+				{i: 2, d: 10 * time.Second},
+				{i: 3, d: 10 * time.Second},
+				{i: 4, d: 10 * time.Second},
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			b := NewConstantBackoff(tt.interval)
+
+			var got []result
+			for i, duration := range b.Iter(5) {
+				got = append(got, result{i: i, d: duration})
+			}
+
+			if !slices.Equal(got, tt.expected) {
+				t.Errorf("got: %v, expected: %v", got, tt.expected)
+			}
+		})
 	}
 }
