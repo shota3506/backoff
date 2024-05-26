@@ -29,7 +29,7 @@ func TestConstantBackoff(t *testing.T) {
 			},
 		},
 		{
-			name:     "10 second",
+			name:     "10 seconds",
 			interval: 10 * time.Second,
 			expected: []result{
 				{i: 0, d: 10 * time.Second},

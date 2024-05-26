@@ -2,6 +2,7 @@ package backoff
 
 import (
 	cryptorand "crypto/rand"
+	"errors"
 	"math"
 	"math/rand/v2"
 	"time"
@@ -9,21 +10,31 @@ import (
 
 type ExponentialBackoffConfig struct {
 	InitialInterval     time.Duration
-	MaxInterval         time.Duration
 	RandomizationFactor float64
 	Multiplier          float64
+	MaxInterval         time.Duration
 }
 
 type ExponentialBackoff struct {
 	initialInterval     time.Duration
-	maxInterval         time.Duration
 	randomizationFactor float64
 	multiplier          float64
+	maxInterval         time.Duration
 
 	rand *rand.Rand
 }
 
 func NewExponentialBackoff(config ExponentialBackoffConfig) (*ExponentialBackoff, error) {
+	if config.InitialInterval < 0 {
+		return nil, errors.New("initial interval must be greater than or equal to 0")
+	}
+	if config.RandomizationFactor < 0 || config.RandomizationFactor > 1 {
+		return nil, errors.New("randomization factor must be greater than or equal to 0 and less than or equal to 1")
+	}
+	if config.Multiplier < 0 {
+		return nil, errors.New("multiplier must be greater than or equal to 0")
+	}
+
 	var seed [32]byte
 	if _, err := cryptorand.Read(seed[:]); err != nil {
 		return nil, err
@@ -32,9 +43,9 @@ func NewExponentialBackoff(config ExponentialBackoffConfig) (*ExponentialBackoff
 
 	return &ExponentialBackoff{
 		initialInterval:     config.InitialInterval,
-		maxInterval:         config.MaxInterval,
 		randomizationFactor: config.RandomizationFactor,
 		multiplier:          config.Multiplier,
+		maxInterval:         config.MaxInterval,
 
 		rand: r,
 	}, nil
@@ -55,8 +66,8 @@ func (b *ExponentialBackoff) nextInterval(i int) time.Duration {
 	if b.randomizationFactor > 0 {
 		interval = b.randomize(interval)
 	}
-	if interval > b.maxInterval {
-		return b.maxInterval
+	if b.maxInterval > 0 {
+		return min(interval, b.maxInterval)
 	}
 	return interval
 }

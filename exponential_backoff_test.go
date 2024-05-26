@@ -22,7 +22,6 @@ func TestExponentialBackoff(t *testing.T) {
 			name: "multiplier 1 and randomization factor 0",
 			config: ExponentialBackoffConfig{
 				InitialInterval:     time.Second,
-				MaxInterval:         10 * time.Second,
 				Multiplier:          1,
 				RandomizationFactor: 0,
 			},
@@ -38,7 +37,6 @@ func TestExponentialBackoff(t *testing.T) {
 			name: "multiplier 2 and randomization factor 0.5",
 			config: ExponentialBackoffConfig{
 				InitialInterval:     time.Second,
-				MaxInterval:         time.Minute,
 				Multiplier:          2,
 				RandomizationFactor: 0.5,
 			},
