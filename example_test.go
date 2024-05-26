@@ -26,10 +26,19 @@ func ExampleExponentialBackoff() {
 		log.Fatal(err)
 	}
 
-	for i := range backoff.SleepIter(5, b) {
+	backoff.SleepIter(20, b)(func(i int) bool {
 		if err := do(i); err == nil {
-			break
+			return false
 		}
-		// retry after backoff
-	}
+		return true
+	})
+
+	// above code will be replaced with the following code
+	// when range-over-function is supported.
+	//
+	// for i := range backoff.SleepIter(5, b) {
+	// 	if err := do(i); err == nil {
+	// 		break
+	// 	}
+	// }
 }
