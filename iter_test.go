@@ -13,7 +13,7 @@ func TestSleeper_Iter(t *testing.T) {
 	callStack := []string{}
 
 	var mu sync.Mutex
-	after := func(d time.Duration) <-chan time.Time {
+	after = func(d time.Duration) <-chan time.Time {
 		ch := make(chan time.Time, 1)
 		go func() {
 			now := <-time.After(time.Microsecond)
@@ -24,12 +24,14 @@ func TestSleeper_Iter(t *testing.T) {
 		}()
 		return ch
 	}
+	t.Cleanup(func() {
+		after = time.After
+	})
 
 	duration := time.Second
-	sleeper := NewSleeper(NewConstantBackoff(duration))
-	sleeper.after = after // override after
+	backoff := NewConstantBackoff(duration)
 
-	for i := range sleeper.Iter(5) {
+	for i := range SleepIter(5, backoff) {
 		callStack = append(callStack, fmt.Sprintf("yield %d", i))
 	}
 
@@ -53,7 +55,7 @@ func TestSleeper_IterContext(t *testing.T) {
 	callStack := []string{}
 
 	var mu sync.Mutex
-	after := func(d time.Duration) <-chan time.Time {
+	after = func(d time.Duration) <-chan time.Time {
 		ch := make(chan time.Time, 1)
 		go func() {
 			now := <-time.After(time.Microsecond)
@@ -64,14 +66,16 @@ func TestSleeper_IterContext(t *testing.T) {
 		}()
 		return ch
 	}
+	t.Cleanup(func() {
+		after = time.After
+	})
 
 	duration := time.Second
-	sleeper := NewSleeper(NewConstantBackoff(duration))
-	sleeper.after = after // override after
+	backoff := NewConstantBackoff(duration)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	for i := range sleeper.IterContext(ctx, 5) {
+	for i := range SleepIterContext(ctx, 5, backoff) {
 		callStack = append(callStack, fmt.Sprintf("yield %d", i))
 		if i == 2 {
 			cancel()

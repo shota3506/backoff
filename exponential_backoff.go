@@ -8,13 +8,26 @@ import (
 	"time"
 )
 
+// ExponentialBackoffConfig is the configuration for ExponentialBackoff.
 type ExponentialBackoffConfig struct {
-	InitialInterval     time.Duration
+	// InitialInterval specifies the initial interval.
+	InitialInterval time.Duration
+
+	// RandomizationFactor specifies the degree of randomization.
+	// The backoff interval is multiplied by a random value in the range [1-randomizationFactor, 1+randomizationFactor].
 	RandomizationFactor float64
-	Multiplier          float64
-	MaxInterval         time.Duration
+
+	// Multiplier specifies the multiplier for the next interval.
+	// The next interval is calculated by multiplying the previous interval by the multiplier.
+	Multiplier float64
+
+	// MaxInterval specifies the maximum backoff interval.
+	// The backoff interval is capped to the max interval.
+	// If the value is 0, the backoff interval is not capped.
+	MaxInterval time.Duration
 }
 
+// ExponentialBackoff is a backoff strategy that increases the interval exponentially.
 type ExponentialBackoff struct {
 	initialInterval     time.Duration
 	randomizationFactor float64
@@ -24,6 +37,7 @@ type ExponentialBackoff struct {
 	rand *rand.Rand
 }
 
+// NewExponentialBackoff returns a new ExponentialBackoff with the given configuration.
 func NewExponentialBackoff(config ExponentialBackoffConfig) (*ExponentialBackoff, error) {
 	if config.InitialInterval < 0 {
 		return nil, errors.New("initial interval must be greater than or equal to 0")
@@ -51,17 +65,9 @@ func NewExponentialBackoff(config ExponentialBackoffConfig) (*ExponentialBackoff
 	}, nil
 }
 
-func (b *ExponentialBackoff) Iter(n int) func(yield func(int, time.Duration) bool) {
-	return func(yield func(int, time.Duration) bool) {
-		for i := 0; i < n; i++ {
-			if !yield(i, b.nextInterval(i)) {
-				break
-			}
-		}
-	}
-}
-
-func (b *ExponentialBackoff) nextInterval(i int) time.Duration {
+// Interval returns the backoff interval for the i-th attempt.
+// The interval is calculated by multiplying the initial interval by the multiplier to the power of i.
+func (b *ExponentialBackoff) Interval(i int) time.Duration {
 	interval := time.Duration(float64(b.initialInterval) * math.Pow(b.multiplier, float64(i)))
 	if b.randomizationFactor > 0 {
 		interval = b.randomize(interval)

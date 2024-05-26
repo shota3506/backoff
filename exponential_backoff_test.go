@@ -74,8 +74,8 @@ func TestExponentialBackoff(t *testing.T) {
 			b.rand = rand.New(rand.NewChaCha8([32]byte{}))
 
 			var got []result
-			for i, duration := range b.Iter(5) {
-				got = append(got, result{i: i, d: duration})
+			for i := range 5 {
+				got = append(got, result{i: i, d: b.Interval(i)})
 			}
 			if !slices.Equal(got, tt.expected) {
 				t.Errorf("got: %v, expected: %v", got, tt.expected)

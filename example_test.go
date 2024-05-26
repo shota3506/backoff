@@ -26,7 +26,7 @@ func ExampleExponentialBackoff() {
 		log.Fatal(err)
 	}
 
-	for i := range backoff.NewSleeper(b).Iter(5) {
+	for i := range backoff.SleepIter(5, b) {
 		if err := do(i); err == nil {
 			break
 		}

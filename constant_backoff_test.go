@@ -44,8 +44,8 @@ func TestConstantBackoff(t *testing.T) {
 			b := NewConstantBackoff(tt.interval)
 
 			var got []result
-			for i, duration := range b.Iter(5) {
-				got = append(got, result{i: i, d: duration})
+			for i := range 5 {
+				got = append(got, result{i: i, d: b.Interval(i)})
 			}
 
 			if !slices.Equal(got, tt.expected) {

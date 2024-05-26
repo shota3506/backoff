@@ -2,22 +2,20 @@ package backoff
 
 import "time"
 
+// ConstantBackoff is a backoff strategy that always returns the same interval.
 type ConstantBackoff struct {
 	interval time.Duration
 }
 
+// NewConstantBackoff returns a new ConstantBackoff with the given interval.
 func NewConstantBackoff(interval time.Duration) *ConstantBackoff {
 	return &ConstantBackoff{
 		interval: interval,
 	}
 }
 
-func (b *ConstantBackoff) Iter(n int) func(yield func(int, time.Duration) bool) {
-	return func(yield func(int, time.Duration) bool) {
-		for i := 0; i < n; i++ {
-			if !yield(i, b.interval) {
-				break
-			}
-		}
-	}
+// Interval returns the backoff interval for the i-th attempt.
+// The interval is always the same.
+func (b *ConstantBackoff) Interval(n int) time.Duration {
+	return b.interval
 }
